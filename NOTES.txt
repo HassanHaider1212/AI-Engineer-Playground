@@ -1,0 +1,13 @@
+# Project notes – paths, keys, and key info
+
+## Paths
+- HF_HOME (Hugging Face cache): D:/LangChain/huggingFace_cache
+- Project root: D:/LangChain/LangChainModels
+
+## API keys / env
+- .env holds secrets (OPENAI_API_KEY, HUGGINGFACEHUB_API_TOKEN, etc.) – do not commit
+- Hugging Face token: https://huggingface.co/settings/tokens (Inference permission)
+
+## Other
+- Local Free Model Stored in below path:
+C:\Users\HP1\.cache\huggingface\hub
