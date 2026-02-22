@@ -1,4 +1,6 @@
 .env
+cv_ai_engineer.txt
+Prompts/chatHistory.txt
 
 # Python
 __pycache__/
