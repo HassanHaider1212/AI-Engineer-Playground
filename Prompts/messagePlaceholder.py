@@ -1,7 +1,7 @@
 from langchain_core.prompts import messagePlaceholder, ChatPromptTemplate
 
 #chat template
-ch
+
 chat_template = ChatPromptTemplate([
     ("system", "You are a helpful customer support agent"),
     messagePlaceholder(variable_name="chat_history"),
