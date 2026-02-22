@@ -23,6 +23,9 @@ sentence-transformers
 # Environment Variable Management
 python-dotenv
 
+# UI
+streamlit
+
 # Machine Learning Utilities
 numpy
 scikit-learn
