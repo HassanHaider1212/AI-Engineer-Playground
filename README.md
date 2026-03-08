@@ -1,6 +1,6 @@
 # LangChain Models & Semantic Search
 
-A LangChain-based project covering **embeddings**, **chat models**, **LLMs**, and **prompts**. Includes semantic search with cosine similarity, Streamlit UIs, and conversation demos. Supports OpenAI and Hugging Face (cloud and local).
+A LangChain-based project covering **embeddings**, **chat models**, **LLMs**, **prompts**, and **structured outputs**. Includes semantic search with cosine similarity, Streamlit UIs, conversation demos, and LLM response shaping via TypedDict, Pydantic, and JSON Schema. Supports OpenAI and Hugging Face (cloud and local).
 
 ## Features
 
@@ -9,6 +9,7 @@ A LangChain-based project covering **embeddings**, **chat models**, **LLMs**, an
 - **Chat models**: OpenAI and Hugging Face chat with message-based APIs
 - **LLMs**: Direct LLM invocation (e.g. OpenAI `gpt-3.5-turbo-instruct`)
 - **Prompts**: `PromptTemplate`, research-paper summarizer UI (Streamlit), chatbot with conversation history, template save/load (JSON)
+- **Structured outputs**: TypedDict, Pydantic, and JSON Schema for type-safe, validated LLM responses — [when-to-use-what guide](StructuredOutput/when-to-use-what.md) with criteria and feature comparison table
 
 ## Project structure
 
@@ -29,6 +30,14 @@ LangChainModels/
 │   ├── chatbot.py                     # CLI chatbot with conversation history (HumanMessage/AIMessage/SystemMessage)
 │   ├── messages.py                    # Simple message list demo (System + Human → invoke → AIMessage)
 │   └── promptGenerator.py             # PromptTemplate for research summary, saves to template.json
+├── StructuredOutput/
+│   ├── when-to-use-what.md            # When to use TypedDict / Pydantic / JSON Schema + feature table
+│   ├── structuredOutput_typeDict.py   # Structured output with TypedDict (type hints only)
+│   ├── structuredOutput_Pydantic.py   # Structured output with Pydantic (validation, defaults, conversion)
+│   ├── structuredOutput_JsonSchema.py # Structured output with JSON Schema (no Pydantic, cross-language)
+│   ├── jsonSchema.json                # JSON Schema definition (used by structuredOutput_JsonSchema.py)
+│   ├── pydanticDemo.py                # Minimal Pydantic + dict unpacking demo
+│   └── typeDictDemo.py                # Minimal TypedDict demo
 ├── template.json                      # Saved prompt template (from promptGenerator)
 ├── requirements.txt
 ├── .env                                # OPENAI_API_KEY (and optional HF keys)
@@ -102,10 +111,45 @@ LangChainModels/
      python EmbeddedModels/2.embedding_huggingFaceLocal.py
      ```
 
+   - **Structured output (TypedDict):**
+     ```bash
+     python StructuredOutput/structuredOutput_typeDict.py
+     ```
+
+   - **Structured output (Pydantic):**
+     ```bash
+     python StructuredOutput/structuredOutput_Pydantic.py
+     ```
+
+   - **Structured output (JSON Schema):**
+     ```bash
+     python StructuredOutput/structuredOutput_JsonSchema.py
+     ```
+     Run from project root so `StructuredOutput/jsonSchema.json` is found.
+
+   - **Minimal demos (Pydantic / TypedDict):**
+     ```bash
+     python StructuredOutput/pydanticDemo.py
+     python StructuredOutput/typeDictDemo.py
+     ```
+
+## Structured output (LLM response shaping)
+
+This project implements **three ways** to get type-safe, structured data from LLM responses in LangChain: **TypedDict**, **Pydantic**, and **JSON Schema**. Each is demonstrated with runnable scripts and minimal demos.
+
+| Approach       | Use when |
+| -------------- | -------- |
+| **TypedDict**  | You only need type hints and trust the LLM output. No extra deps. |
+| **Pydantic**   | You need validation, defaults, and automatic type conversion. |
+| **JSON Schema** | You want validation without Pydantic, or a portable JSON spec (e.g. cross-language). |
+
+**Guide:** [StructuredOutput/when-to-use-what.md](StructuredOutput/when-to-use-what.md) — "When to use what?" criteria and a feature comparison table (basic structure, type enforcement, data validation, default values, automatic conversion, cross-language compatibility).
+
 ## Tech stack
 
 - **LangChain** (core, OpenAI, Hugging Face)
 - **Streamlit** (Research Tool UI)
+- **Pydantic** (structured output validation, used in StructuredOutput)
 - **python-dotenv** (environment variables)
 - **scikit-learn** (cosine similarity)
 - **Python 3.x**
