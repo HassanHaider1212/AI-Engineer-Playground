@@ -1,0 +1,32 @@
+{
+    "title": "Review",
+    "description": "A review of a product or service",
+    "type": "object",
+    "properties": {
+        "key_themes": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Write the key themes of the review"
+        },
+        "summary": {
+            "type": "string",
+            "description": "summary of the review"
+        },
+        "sentiment": {
+            "type": "string",
+            "enum": ["positive", "negative", "neutral"],
+            "description": "sentiment of the review either positive or negative or neutral"
+        },
+        "pros": {
+            "type": ["array", "null"],
+            "items": {"type": "string"},
+            "description": "Write the pros of the review"
+        },
+        "cons": {
+            "type": ["array", "null"],
+            "items": {"type": "string"},
+            "description": "Write the cons of the review"
+        }
+    },
+    "required": ["key_themes", "summary", "sentiment"]
+}
