@@ -10,6 +10,7 @@ A LangChain-based project covering **embeddings**, **chat models**, **LLMs**, **
 - **LLMs**: Direct LLM invocation (e.g. OpenAI `gpt-3.5-turbo-instruct`)
 - **Prompts**: `PromptTemplate`, research-paper summarizer UI (Streamlit), chatbot with conversation history, template save/load (JSON)
 - **Structured outputs**: TypedDict, Pydantic, and JSON Schema for type-safe, validated LLM responses — [when-to-use-what guide](StructuredOutput/when-to-use-what.md) with criteria and feature comparison table
+- **Output parsers**: `StrOutputParser`, `JsonOutputParser`, and `PydanticOutputParser` demos with direct invoke and LCEL chaining
 
 ## Project structure
 
@@ -30,6 +31,11 @@ LangChainModels/
 │   ├── chatbot.py                     # CLI chatbot with conversation history (HumanMessage/AIMessage/SystemMessage)
 │   ├── messages.py                    # Simple message list demo (System + Human → invoke → AIMessage)
 │   └── promptGenerator.py             # PromptTemplate for research summary, saves to template.json
+├── OutputParsers/
+│   ├── strOutputParser.py             # Manual two-step prompting with chat model responses
+│   ├── strOutputParser_Chain.py       # LCEL chain with StrOutputParser for plain string outputs
+│   ├── jsonOutputParser.py            # JsonOutputParser demo (+ chaining)
+│   └── pydanticOutputParser.py        # PydanticOutputParser demo (+ schema validation + chaining)
 ├── StructuredOutput/
 │   ├── when-to-use-what.md            # When to use TypedDict / Pydantic / JSON Schema + feature table
 │   ├── structuredOutput_typeDict.py   # Structured output with TypedDict (type hints only)
@@ -133,6 +139,19 @@ LangChainModels/
      python StructuredOutput/typeDictDemo.py
      ```
 
+   - **Output parser demos:**
+     ```bash
+     python OutputParsers/strOutputParser.py
+     python OutputParsers/strOutputParser_Chain.py
+     python OutputParsers/jsonOutputParser.py
+     python OutputParsers/pydanticOutputParser.py
+     ```
+    
+   - **Activate virtual environment:**
+    ```bash
+    D:\LangChain\LangChainModels\venv\Scripts\Activate.ps1
+    ```
+
 ## Structured output (LLM response shaping)
 
 This project implements **three ways** to get type-safe, structured data from LLM responses in LangChain: **TypedDict**, **Pydantic**, and **JSON Schema**. Each is demonstrated with runnable scripts and minimal demos.
@@ -144,6 +163,18 @@ This project implements **three ways** to get type-safe, structured data from LL
 | **JSON Schema** | You want validation without Pydantic, or a portable JSON spec (e.g. cross-language). |
 
 **Guide:** [StructuredOutput/when-to-use-what.md](StructuredOutput/when-to-use-what.md) — "When to use what?" criteria and a feature comparison table (basic structure, type enforcement, data validation, default values, automatic conversion, cross-language compatibility).
+
+## Output parsers (LangChain)
+
+This project also shows parser-first response handling with LangChain output parsers:
+
+| Parser | What it returns | Best for |
+| ------ | --------------- | -------- |
+| **StrOutputParser** | plain string | Simple text pipelines and step-by-step summarization flows |
+| **JsonOutputParser** | Python `dict`/JSON | Structured JSON output without strict schema validation |
+| **PydanticOutputParser** | Pydantic object | Strict schema enforcement and field-level validation |
+
+Note: In newer LangChain versions, use parser imports from `langchain_core.output_parsers`.
 
 ## Tech stack
 
