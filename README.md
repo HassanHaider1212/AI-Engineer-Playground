@@ -1,6 +1,6 @@
 # LangChain Models & Semantic Search
 
-A LangChain-based project covering **embeddings**, **chat models**, **LLMs**, **prompts**, and **structured outputs**. Includes semantic search with cosine similarity, Streamlit UIs, conversation demos, and LLM response shaping via TypedDict, Pydantic, and JSON Schema. Supports OpenAI and Hugging Face (cloud and local).
+A LangChain-based project covering **embeddings**, **chat models**, **LLMs**, **prompts**, **LCEL chaining** (`prompt | model | parser` and `RunnableParallel` / `RunnableBranch`), and **structured outputs**. Includes semantic search with cosine similarity, Streamlit UIs, conversation demos, and LLM response shaping via TypedDict, Pydantic, and JSON Schema. Supports OpenAI and Hugging Face (cloud and local).
 
 ## Features
 
@@ -10,7 +10,8 @@ A LangChain-based project covering **embeddings**, **chat models**, **LLMs**, **
 - **LLMs**: Direct LLM invocation (e.g. OpenAI `gpt-3.5-turbo-instruct`)
 - **Prompts**: `PromptTemplate`, research-paper summarizer UI (Streamlit), chatbot with conversation history, template save/load (JSON)
 - **Structured outputs**: TypedDict, Pydantic, and JSON Schema for type-safe, validated LLM responses — [when-to-use-what guide](StructuredOutput/when-to-use-what.md) with criteria and feature comparison table
-- **Output parsers**: `StrOutputParser`, `JsonOutputParser`, and `PydanticOutputParser` demos with direct invoke and LCEL chaining
+- **Output parsers**: `StrOutputParser`, `JsonOutputParser`, and `PydanticOutputParser` demos with direct invoke and **LCEL chains** (`template | model | parser`)
+- **Chains (LCEL)**: simple linear chain, sequential two-step chain, conditional routing with `RunnableBranch`, parallel branches with `RunnableParallel`
 
 ## Project structure
 
@@ -33,9 +34,14 @@ LangChainModels/
 │   └── promptGenerator.py             # PromptTemplate for research summary, saves to template.json
 ├── OutputParsers/
 │   ├── strOutputParser.py             # Manual two-step prompting with chat model responses
-│   ├── strOutputParser_Chain.py       # LCEL chain with StrOutputParser for plain string outputs
-│   ├── jsonOutputParser.py            # JsonOutputParser demo (+ chaining)
-│   └── pydanticOutputParser.py        # PydanticOutputParser demo (+ schema validation + chaining)
+│   ├── strOutputParser_Chain.py       # Multi-step LCEL: report → summary via chained templates + parsers
+│   ├── jsonOutputParser.py            # JsonOutputParser (invoke + `template | model | parser` chain)
+│   └── pydanticOutputParser.py        # PydanticOutputParser (invoke + LCEL chain)
+├── Chains/
+│   ├── simpleChain.py                 # Single-step LCEL: PromptTemplate | ChatOpenAI | StrOutputParser + graph print
+│   ├── sequentialChain.py             # Sequential LCEL: report prompt → model → summary prompt → model
+│   ├── conditionalChain.py            # Classifier (Pydantic) then RunnableBranch to positive/negative paths
+│   └── parallelChain.py               # RunnableParallel (notes + quiz) then merge prompt
 ├── StructuredOutput/
 │   ├── when-to-use-what.md            # When to use TypedDict / Pydantic / JSON Schema + feature table
 │   ├── structuredOutput_typeDict.py   # Structured output with TypedDict (type hints only)
@@ -146,11 +152,20 @@ LangChainModels/
      python OutputParsers/jsonOutputParser.py
      python OutputParsers/pydanticOutputParser.py
      ```
-    
+
+   - **LCEL chain demos (`Chains/`):**
+     ```bash
+     python Chains/simpleChain.py
+     python Chains/sequentialChain.py
+     python Chains/conditionalChain.py
+     python Chains/parallelChain.py
+     ```
+     These examples use `OPENAI_API_KEY` from `.env`.
+
    - **Activate virtual environment:**
-    ```bash
-    D:\LangChain\LangChainModels\venv\Scripts\Activate.ps1
-    ```
+     ```bash
+     D:\LangChain\LangChainModels\venv\Scripts\Activate.ps1
+     ```
 
 ## Structured output (LLM response shaping)
 
@@ -175,6 +190,21 @@ This project also shows parser-first response handling with LangChain output par
 | **PydanticOutputParser** | Pydantic object | Strict schema enforcement and field-level validation |
 
 Note: In newer LangChain versions, use parser imports from `langchain_core.output_parsers`.
+
+## Chaining (LCEL)
+
+LangChain composes runnables with the pipe operator: **`prompt | model | output_parser`**. That is the same pattern as **LangChain Expression Language (LCEL)**: each step’s output becomes the next step’s input when types line up (e.g. string in → string out through `StrOutputParser`).
+
+| Script | Concept |
+| ------ | ------- |
+| `Chains/simpleChain.py` | One linear chain: prompt → chat model → string parser; optional `get_graph().print_ascii()` |
+| `Chains/sequentialChain.py` | Two prompts in one pipeline: generate report, then summarize it |
+| `Chains/conditionalChain.py` | **RunnableBranch**: classify with Pydantic, then route to different prompts |
+| `Chains/parallelChain.py` | **RunnableParallel**: two sub-chains (notes + quiz), then merge |
+| `OutputParsers/strOutputParser_Chain.py` | Same sequential idea: report template → model → parser → summary template → model → parser |
+| `OutputParsers/jsonOutputParser.py` & `pydanticOutputParser.py` | Both show **`chain = template \| model \| parser`** after a manual `invoke` / `parse` section |
+
+Without parsers (or without composing into one chain), you typically call **`model.invoke()`** for each step and thread text between prompts by hand—as in `OutputParsers/strOutputParser.py`.
 
 ## Tech stack
 
