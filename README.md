@@ -1,6 +1,6 @@
 # LangChain Models & Semantic Search
 
-A LangChain-based project covering **embeddings**, **chat models**, **LLMs**, **prompts**, **LCEL chaining** (`prompt | model | parser` and `RunnableParallel` / `RunnableBranch`), and **structured outputs**. Includes semantic search with cosine similarity, Streamlit UIs, conversation demos, and LLM response shaping via TypedDict, Pydantic, and JSON Schema. Supports OpenAI and Hugging Face (cloud and local).
+A LangChain-based project covering **embeddings**, **chat models**, **LLMs**, **prompts**, **LCEL chaining** (`prompt | model | parser` and `RunnableParallel` / `RunnableBranch`), **runnables** (`RunnableSequence`, `RunnableParallel`, `RunnableLambda`, `RunnablePassthrough`, `RunnableBranch`), and **structured outputs**. Includes semantic search with cosine similarity, Streamlit UIs, conversation demos, and LLM response shaping via TypedDict, Pydantic, and JSON Schema. Supports OpenAI and Hugging Face (cloud and local).
 
 ## Features
 
@@ -12,6 +12,7 @@ A LangChain-based project covering **embeddings**, **chat models**, **LLMs**, **
 - **Structured outputs**: TypedDict, Pydantic, and JSON Schema for type-safe, validated LLM responses — [when-to-use-what guide](StructuredOutput/when-to-use-what.md) with criteria and feature comparison table
 - **Output parsers**: `StrOutputParser`, `JsonOutputParser`, and `PydanticOutputParser` demos with direct invoke and **LCEL chains** (`template | model | parser`)
 - **Chains (LCEL)**: simple linear chain, sequential two-step chain, conditional routing with `RunnableBranch`, parallel branches with `RunnableParallel`
+- **Runnables**: focused examples for `RunnableSequence`, `RunnableParallel`, `RunnableLambda`, `RunnablePassthrough`, and `RunnableBranch`, including how data types flow through each step
 
 ## Project structure
 
@@ -42,6 +43,12 @@ LangChainModels/
 │   ├── sequentialChain.py             # Sequential LCEL: report prompt → model → summary prompt → model
 │   ├── conditionalChain.py            # Classifier (Pydantic) then RunnableBranch to positive/negative paths
 │   └── parallelChain.py               # RunnableParallel (notes + quiz) then merge prompt
+├── Runnables/
+│   ├── runnableSequence.py            # RunnableSequence: multi-step pipeline (prompt → model → parser → prompt → model → parser)
+│   ├── runnableParallel.py            # RunnableParallel: generate tweet + LinkedIn post in parallel
+│   ├── runnableLambda.py              # RunnableLambda: attach custom Python function (word count) into chain
+│   ├── runnablePassthrough.py         # RunnablePassthrough: keep original text while deriving explanation
+│   └── runnableBranch.py              # RunnableBranch: conditional route based on report length
 ├── StructuredOutput/
 │   ├── when-to-use-what.md            # When to use TypedDict / Pydantic / JSON Schema + feature table
 │   ├── structuredOutput_typeDict.py   # Structured output with TypedDict (type hints only)
@@ -162,6 +169,15 @@ LangChainModels/
      ```
      These examples use `OPENAI_API_KEY` from `.env`.
 
+   - **Runnable demos (`Runnables/`):**
+     ```bash
+     python Runnables/runnableSequence.py
+     python Runnables/runnableParallel.py
+     python Runnables/runnableLambda.py
+     python Runnables/runnablePassthrough.py
+     python Runnables/runnableBranch.py
+     ```
+
    - **Activate virtual environment:**
      ```bash
      D:\LangChain\LangChainModels\venv\Scripts\Activate.ps1
@@ -205,6 +221,24 @@ LangChain composes runnables with the pipe operator: **`prompt | model | output_
 | `OutputParsers/jsonOutputParser.py` & `pydanticOutputParser.py` | Both show **`chain = template \| model \| parser`** after a manual `invoke` / `parse` section |
 
 Without parsers (or without composing into one chain), you typically call **`model.invoke()`** for each step and thread text between prompts by hand—as in `OutputParsers/strOutputParser.py`.
+
+## Runnables (with types)
+
+LangChain runnables are composable units with explicit input/output behavior. In practice:
+- `PromptTemplate` takes `dict` and returns a prompt value.
+- Chat model takes prompt/messages and returns `AIMessage`.
+- `StrOutputParser` converts `AIMessage` to `str`.
+- The next runnable must accept the previous runnable's output type.
+
+| Runnable | Example script | Input type | Output type | Why useful |
+| -------- | -------------- | ---------- | ----------- | ---------- |
+| `RunnableSequence` | `Runnables/runnableSequence.py` | `dict`/`str` | transformed final value (usually `str`) | Linear multi-step pipeline |
+| `RunnableParallel` | `Runnables/runnableParallel.py` | same shared input (`dict`) | `dict` of branch outputs | Run independent branches concurrently |
+| `RunnableLambda` | `Runnables/runnableLambda.py` | any Python object | any Python object | Inject custom Python logic in chain |
+| `RunnablePassthrough` | `Runnables/runnablePassthrough.py` | any | same as input | Preserve original value while adding derived values |
+| `RunnableBranch` | `Runnables/runnableBranch.py` | any | output from selected branch | Conditional routing based on predicates |
+
+Think of this as typed data flow: each node advertises what it expects and what it emits, and chain composition works when those types align.
 
 ## Tech stack
 
