@@ -9,3 +9,5 @@ __pycache__/
 *.so
 venv/
 .venv/
+Camera/motionDetection.py
+yolov8n.pt
