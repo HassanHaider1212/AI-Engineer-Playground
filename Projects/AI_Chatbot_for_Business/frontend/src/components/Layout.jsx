@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom'
-import { Bot, MessageSquare, Users, LayoutDashboard, Menu, X, MessageCircle } from 'lucide-react'
+import { Bot, MessageSquare, Users, LayoutDashboard, Menu, X, MessageCircle, Play } from 'lucide-react'
 import { useState } from 'react'
 
 export default function Layout() {
@@ -12,6 +12,7 @@ export default function Layout() {
     { name: 'Chat', href: '/chat', icon: MessageCircle },
     { name: 'Conversations', href: '/conversations', icon: MessageSquare },
     { name: 'Leads', href: '/leads', icon: Users },
+    { name: 'Widget Demo', href: '/widget-demo', icon: Play },
   ]
 
   const isActive = (path) => {

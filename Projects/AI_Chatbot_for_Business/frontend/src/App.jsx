@@ -7,6 +7,7 @@ import BotDetail from './pages/BotDetail'
 import Conversations from './pages/Conversations'
 import Leads from './pages/Leads'
 import Chat from './pages/Chat'
+import WidgetDemo from './pages/WidgetDemo'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="leads" element={<Leads />} />
           <Route path="chat" element={<Chat />} />
         </Route>
+        <Route path="/widget-demo" element={<WidgetDemo />} />
       </Routes>
     </Router>
   )
