@@ -1,0 +1,12 @@
+-> RAG (Retrieval-Augmented Generation)
+   -> Document Loader
+   -> Text Splitters
+   -> Vector Databases
+   -> Retrieve 
+
+-> Document Loaders
+   -> TextLoader
+   -> PyPDFLoader
+   -> WebBaseLoader
+   -> CSVLoader
+
