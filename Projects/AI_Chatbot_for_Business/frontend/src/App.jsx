@@ -8,6 +8,7 @@ import Conversations from './pages/Conversations'
 import Leads from './pages/Leads'
 import Chat from './pages/Chat'
 import WidgetDemo from './pages/WidgetDemo'
+import EmbedTester from './pages/EmbedTester'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="conversations" element={<Conversations />} />
           <Route path="leads" element={<Leads />} />
           <Route path="chat" element={<Chat />} />
+          <Route path="embed-tester" element={<EmbedTester />} />
         </Route>
         <Route path="/widget-demo" element={<WidgetDemo />} />
       </Routes>

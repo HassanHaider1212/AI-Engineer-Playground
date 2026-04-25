@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Bot, Trash2, CheckCircle, XCircle } from 'lucide-react'
+import { Plus, Bot, Trash2, CheckCircle, XCircle, Code } from 'lucide-react'
 import { botsAPI } from '../api/api'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
@@ -9,6 +9,8 @@ export default function Bots() {
   const [bots, setBots] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showEmbedModal, setShowEmbedModal] = useState(false)
+  const [selectedBotForEmbed, setSelectedBotForEmbed] = useState(null)
   const [newBot, setNewBot] = useState({ name: '', description: '' })
 
   useEffect(() => {
@@ -59,6 +61,28 @@ export default function Bots() {
     }
   }
 
+  const handleEmbedBot = (bot) => {
+    setSelectedBotForEmbed(bot)
+    setShowEmbedModal(true)
+  }
+
+  const getEmbedCode = (bot) => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+    return `<script>
+  window.chatbotConfig = {
+    botId: '${bot.id}',
+    apiUrl: '${apiUrl}'
+  };
+<\/script>
+<script src="http://localhost:3000/widget.js"><\/script>`;
+  }
+
+  const copyEmbedCode = () => {
+    const code = getEmbedCode(selectedBotForEmbed);
+    navigator.clipboard.writeText(code);
+    toast.success('Embed code copied to clipboard!');
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -104,12 +128,21 @@ export default function Bots() {
                 <div className="bg-primary-100 p-3 rounded-lg">
                   <Bot className="text-primary-600" size={24} />
                 </div>
-                <button
-                  onClick={() => handleDeleteBot(bot.id, bot.name)}
-                  className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                  <Trash2 size={18} />
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEmbedBot(bot)}
+                    className="text-blue-500 hover:text-blue-700 p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Get Embed Code"
+                  >
+                    <Code size={18} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteBot(bot.id, bot.name)}
+                    className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
               </div>
 
               <h3 className="text-xl font-bold text-gray-900 mb-2">{bot.name}</h3>
@@ -192,6 +225,68 @@ export default function Bots() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showEmbedModal && selectedBotForEmbed && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full p-6">
+            <h2 className="text-2xl font-bold mb-4">Embed Chat Widget</h2>
+            <p className="text-gray-600 mb-4">
+              Add this chat widget to your website by copying the code below and pasting it into your HTML before the closing &lt;/body&gt; tag.
+            </p>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Bot: {selectedBotForEmbed.name}
+              </label>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Embed Code
+              </label>
+              <div className="relative">
+                <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
+                  <code>{getEmbedCode(selectedBotForEmbed)}</code>
+                </pre>
+                <button
+                  onClick={copyEmbedCode}
+                  className="absolute top-2 right-2 bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition"
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <h3 className="font-semibold text-blue-900 mb-2">📋 Instructions</h3>
+              <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+                <li>Copy the embed code above</li>
+                <li>Paste it into your website's HTML</li>
+                <li>Place it before the closing &lt;/body&gt; tag</li>
+                <li>Refresh your website to see the widget</li>
+              </ol>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={copyEmbedCode}
+                className="btn-primary flex-1"
+              >
+                Copy Code
+              </button>
+              <button
+                onClick={() => {
+                  setShowEmbedModal(false)
+                  setSelectedBotForEmbed(null)
+                }}
+                className="btn-secondary flex-1"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

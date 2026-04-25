@@ -11,6 +11,7 @@
   let sessionId = localStorage.getItem(`chatbot_session_${botId}`) || null;
   let isOpen = false;
   let messages = [];
+  let capturedLeads = new Set();
 
   const styles = `
     .chatbot-widget {
@@ -401,6 +402,80 @@
     }
   }
 
+  // Extract contact information from messages
+  function extractLeadInfo(messageHistory) {
+    const leadInfo = { name: null, email: null, phone: null, message: null };
+    
+    // Simple patterns to detect contact info
+    const emailPattern = /[\w.-]+@[\w.-]+\.\w+/;
+    const phonePattern = /(\+\d{1,3}[-.]?)?\(?\d{3}\)?[-.]?\d{3}[-.]?\d{4}/;
+    
+    // Look through recent messages for contact info
+    const recentMessages = messageHistory.slice(-10);
+    
+    for (const msg of recentMessages) {
+      if (msg.role === 'user') {
+        const content = msg.content.toLowerCase();
+        
+        // Check if this message contains contact info
+        const emailMatch = msg.content.match(emailPattern);
+        const phoneMatch = msg.content.match(phonePattern);
+        
+        if (emailMatch) leadInfo.email = emailMatch[0];
+        if (phoneMatch) leadInfo.phone = phoneMatch[0];
+        
+        // Try to extract name
+        if (content.includes('my name is') || content.includes('i am') || content.includes("i'm")) {
+          const nameMatch = msg.content.match(/(?:my name is|i am|i'm)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i);
+          if (nameMatch) leadInfo.name = nameMatch[1].trim();
+        }
+        
+        // Save the last message as the lead's message
+        leadInfo.message = msg.content;
+      }
+    }
+    
+    return leadInfo;
+  }
+
+  // Save lead automatically when contact info is detected
+  async function saveLeadIfDetected(messageHistory) {
+    const leadInfo = extractLeadInfo(messageHistory);
+    
+    // Only save if we have at least email or phone
+    if (leadInfo.email || leadInfo.phone) {
+      // Create a unique key for this lead
+      const leadKey = `${leadInfo.email || ''}-${leadInfo.phone || ''}`;
+      
+      // Check if we've already captured this lead
+      if (capturedLeads.has(leadKey)) {
+        return; // Skip if already captured
+      }
+      
+      try {
+        await fetch(`${apiUrl}/leads`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            bot_id: botId,
+            name: leadInfo.name,
+            email: leadInfo.email,
+            phone: leadInfo.phone,
+            message: leadInfo.message,
+          }),
+        });
+        
+        // Mark this lead as captured
+        capturedLeads.add(leadKey);
+        console.log('Lead captured successfully!');
+      } catch (error) {
+        console.error('Error saving lead:', error);
+      }
+    }
+  }
+
   async function sendMessage(message) {
     if (!message.trim()) return;
 
@@ -427,6 +502,10 @@
       if (response.ok) {
         hideTyping();
         addMessage('bot', data.response);
+        
+        // Automatically detect and save lead information
+        const updatedMessages = [...messages, { role: 'user', content: message }, { role: 'bot', content: data.response }];
+        saveLeadIfDetected(updatedMessages);
         
         if (data.session_id && !sessionId) {
           sessionId = data.session_id;
