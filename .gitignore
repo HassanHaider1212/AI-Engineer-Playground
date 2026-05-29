@@ -11,3 +11,6 @@ venv/
 .venv/
 Camera/motionDetection.py
 yolov8n.pt
+
+# Projects
+Projects/
